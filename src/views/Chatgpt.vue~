@@ -1,0 +1,197 @@
+<template>
+	<div class="wrapper">
+		<!-- header部分 -->
+		<header>
+			<p>智能推荐</p>
+		</header>
+
+		<div id="app">
+			<div v-for="message in chatHistory" :key="message.id" :class="{'user-message': message.role === 'user', 'bot-message': message.role === 'bot'}">
+				<p v-if="message.role === 'user'">
+				<div class="message-text">{{ message.content }}</div>
+				<img src="../assets/user1.png">
+				</p>
+
+				<p v-if="message.role === 'bot'">
+					<img src="../assets/AI.png">
+				<div class="message-text">{{ message.content }}</div>
+
+				</p>
+			</div>
+			<li>
+			<input type="text" v-model="messageInput" @keydown.enter="sendMessage">
+			<button @click="sendMessage">Send</button>
+			</li>
+		</div>
+
+		<Footer></Footer>
+	</div>
+</template>
+
+<script>
+	import axios from 'axios';
+	import Footer from '../components/Footer.vue';
+
+	export default {
+		components: {
+			Footer
+		},
+		data() {
+			return {
+				userId: 'user123',
+				messageInput: '',
+				chatHistory: []
+			};
+		},
+		methods: {
+			async sendMessage() {
+				const requestData = {
+					userId: this.userId,
+					message: this.messageInput
+				};
+
+				try {
+					let url = '/chatgpt/chatgpt';
+					const response = await axios.post(url, requestData);
+					const reply = response.data.result;
+
+					this.chatHistory.push({
+						role: 'user',
+						content: this.messageInput
+					});
+					this.chatHistory.push({
+						role: 'bot',
+						content: reply
+					});
+
+					this.messageInput = '';
+				} catch (error) {
+					console.error(error);
+				}
+			}
+		}
+	};
+</script>
+
+<style scoped>
+	/****************** 总容器 ******************/
+	.wrapper {
+		width: 100%;
+		overflow: hidden; /* 隐藏溢出的内容 */
+
+		background-color: #add0da; /* 设置按钮背景颜色为蓝色 */
+	}
+.wrapper::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #add0da; /* 设置背景颜色为蓝色 */
+    z-index: -1; /* 将伪元素置于背景之后 */
+}
+	/****************** header部分 ******************/
+	.wrapper header {
+		width: 100%;
+		height: 12vw;
+		background-color: #0097FF;
+		color: #fff;
+		font-size: 4.8vw;
+		position: fixed;
+		left: 0;
+		top: 0;
+		z-index: 1000;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+	}
+
+	/****************** 聊天框 ******************/
+	#app {
+		background-color: #add0da; /* 设置按钮背景颜色为蓝色 */
+		padding-top: 12.5vw;
+		width: 100%;
+	}
+
+	#app .user-message p {
+	    text-align: right; /* 将用户消息文本右对齐 */
+	   padding-right: 3vw; /* 设置消息文本左内边距 */
+	   padding-top: 0.5vw;
+	    display: flex;
+	    justify-content: flex-end;
+
+
+	}
+	#app .user-message p img {
+	    vertical-align: top; /* 图像垂直对齐到顶部 */
+		 padding-right: 3vw; /* 设置消息文本左内边距 */
+	    width: 50px; /* 根据需要调整大小 */
+	    height: 50px; /* 根据需要调整大小 */
+
+	}
+	#app .user-message p .message-text {
+		text-align: right; /* 将用户消息文本右对齐 */
+	    padding-right: 3vw; /* 设置消息文本右内边距 */
+	    margin: 5px;
+	    padding: 5px;
+	    max-width: 60%;
+	    background-color: #e0e0ff; /* 用户消息的浅蓝色背景 */
+	    border-radius: 10px;
+	}
+
+	#app .bot-message p {
+	    text-align: left; /* 将机器人消息文本右对齐 */
+	    padding-left: 3vw; /* 设置消息文本左内边距 */
+	    padding-bottom: 25vw;
+	    display: flex; /* 使用弹性布局 */
+
+	}
+	#app .bot-message p img {
+	    vertical-align: top; /* 图像垂直对齐到顶部 */
+	    width: 70px; /* 根据需要调整大小 */
+	    height: 70px; /* 根据需要调整大小 */
+	}
+	#app .bot-message p .message-text {
+	    text-align: left; /* 保持消息文本左对齐 */
+	    margin: 5px;
+
+	    max-width: 60%;
+	    background-color: #ffe0e0; /* 机器人消息的浅红色背景 */
+	    border-radius: 10px;
+	}
+
+	#app li {
+	    bottom: 14.3vw; /* 设置对话框容器距离底部的距离为视口宽度的14% */
+	    position: fixed; /* 将对话框容器固定在页面上 */
+	    display: flex; /* 使用弹性布局 */
+	     width: 100%;
+
+
+	}
+
+	#app li input[type="text"] {
+	    flex: 1; /* 让输入框填充剩余空间 */
+	    margin-left: 0.1rem; /* 添加一些内边距 */
+		margin-right: 0;
+		border-radius: 4px; /* 设置按钮的边框圆角为4像素 */
+	    font-size: 1rem; /* 设置字体大小 */
+	    border: solid 2px #3b3b3b; /* 设置边框 */
+		word-wrap: [break]; /* 让文本超出容器宽度时自动换行 */
+
+	}
+
+	#app li button {
+	    font-size: 1.5rem; /* 设置按钮文字大小为1.5倍的基准大小 */
+	    color: #fff; /* 设置按钮文字颜色为白色 */
+	    background-color: #0097FF; /* 设置按钮背景颜色为蓝色 */
+	    border: none; /* 移除按钮的边框 */
+	    border-radius: 4px; /* 设置按钮的边框圆角为4像素 */
+	    position: relative; /* 相对定位，相对于其容器进行定位 */
+	    right: 0; /* 将按钮定位到对话框容器的右侧 */
+	   margin-left: 0; /* 添加一些内边距 */
+	   margin-right:0.1rem;
+	    align-self: flex-end; /* 将按钮自身对齐到对话框容器的底部 */
+	}
+
+</style>
